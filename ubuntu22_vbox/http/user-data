@@ -1,0 +1,27 @@
+#cloud-config
+autoinstall:
+  version: 1
+  locale: en_US.UTF-8
+  keyboard:
+    layout: us
+  storage:
+    layout:
+      name: lvm
+  identity:
+    hostname: ${hostname}
+    username: ${username}
+    password: $6$zTd46AS0iZtL0Giz$DTJRSZHklx064biDkXesWbf1ClSSyBcLyK8BBDJdrwjSLyPb3BaIp3pNOVQxxGrP3TPno5n2KeoF3vIiBD7cE1
+    # Generate with: echo 'PASSWORD' | openssl passwd -6 -stdin
+  ssh:
+    install-server: true
+    allow-pw: true
+  packages:
+    - openssh-server
+    - sudo
+  user-data:
+    disable_root: false
+    timezone: ${timezone}
+  late-commands:
+    - echo '${username} ALL=(ALL) NOPASSWD:ALL' > /target/etc/sudoers.d/${username}
+    - chmod 0440 /target/etc/sudoers.d/${username}
+    - curtin in-target --target=/target -- systemctl enable ssh

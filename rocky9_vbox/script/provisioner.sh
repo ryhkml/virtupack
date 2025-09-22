@@ -2,15 +2,6 @@
 
 set -e
 
-# Packages
-BANDWHICH=""
-FAIL2BAN=""
-ZELLIJ=""
-
-# Services
-FIREWALL_ZONE="public"
-HTTP_HTTPS=""
-
 mkdir app
 mkdir build
 mkdir service
@@ -147,7 +138,7 @@ sudo dnf update -y
 sudo dnf install -y dnf-utils epel-release
 sudo /usr/bin/crb enable
 sudo dnf install -y btop curl chrony fastfetch firewalld gzip rsync policycoreutils-python-utils tar
-sudo systemctl enable --now chronyd
+sudo systemctl enable --now chronyd || echo
 
 echo "--> Configuring firewalld"
 sudo systemctl enable --now firewalld
@@ -195,8 +186,7 @@ actionban       = firewall-cmd --add-rich-rule="%(fwcmd_rich_rule)s"
 actionunban     = firewall-cmd --remove-rich-rule="%(fwcmd_rich_rule)s"
 rich-suffix     = <rich-blocktype>
 EOF
-	sudo systemctl enable --now fail2ban
-	sudo fail2ban-client reload
+	sudo systemctl enable --now fail2ban || echo "--> ERROR: Could not find server"
 fi
 
 if [ "$HTTP_HTTPS" = "Y" ]; then
@@ -259,6 +249,7 @@ sudo grub2-mkconfig -o /boot/grub2/grub.cfg
 echo "--> Removing swap"
 sudo swapoff -a
 sudo sed -i "/swap/ s/^/#/" /etc/fstab
+sudo systemctl daemon-reload
 
 echo "SELinux: $(getenforce)"
 

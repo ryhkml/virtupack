@@ -13,7 +13,7 @@ variable "iso_url" {
 }
 variable "iso_checksum" {
   type    = string
-  default = "aed9449cf79eb2d1c365f4f2561f923a80451b3e8fdbf595889b4cf0ac6c58b8"
+  default = "sha256:aed9449cf79eb2d1c365f4f2561f923a80451b3e8fdbf595889b4cf0ac6c58b8"
 }
 
 variable "cpus" {
@@ -21,31 +21,37 @@ variable "cpus" {
   default = 2
 }
 variable "memory" {
-  type    = number
-  default = 2048
+  type        = number
+  default     = 2048
+  description = "Memory in MB"
 }
 variable "disk_size" {
-  type    = number
-  default = 20480 // 20 * 1024MB
+  type        = number
+  default     = 20480
+  description = "Disk size in MB"
 }
 variable "hostname" {
   type    = string
-  default = "rocky9-packer"
+  default = "vbox"
 }
 variable "timezone" {
   type    = string
   default = "Asia/Jakarta"
 }
+variable "headless" {
+  type    = bool
+  default = true
+}
 
 variable "username" {
   type        = string
-  default     = "adminrocky9"
+  default     = "admin"
   description = "Username for the default user in the image"
 }
 variable "password" {
   type        = string
-  default     = "adminrocky9passwd"
-  description = "Password for root and default users"
+  default     = "adminpasswd"
+  description = "Password for root and default user"
 }
 variable "ssh_public_key_path" {
   type        = string
@@ -62,9 +68,10 @@ source "virtualbox-iso" "rocky9" {
   memory        = var.memory
   disk_size     = var.disk_size
   gfx_vram_size = 16
-  headless      = true
+  boot_wait     = "10s"
+  headless      = var.headless
   http_content = {
-    "/ks.cfg" = templatefile("${path.root}/start.cfg", {
+    "/ks.cfg" = templatefile("${path.root}/http/ks.cfg", {
       hostname = var.hostname,
       timezone = var.timezone,
       username = var.username,
@@ -76,11 +83,14 @@ source "virtualbox-iso" "rocky9" {
     " inst.ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ks.cfg",
     "<enter>"
   ]
+  vboxmanage = [
+    ["modifyvm", "{{ .Name }}", "--audio", "none"],
+  ]
   ssh_username     = var.username
   ssh_password     = var.password
   ssh_timeout      = "30m"
   output_directory = "output"
-  shutdown_command = "echo 'packer' | sudo -S /sbin/halt -p"
+  shutdown_command = "echo '${var.password}' | sudo -S /sbin/halt -p"
 }
 
 build {
@@ -104,11 +114,11 @@ build {
   provisioner "shell" {
     environment_vars = [
       "BANDWHICH=N",
-      "FAIL2BAN=N",
+      "FAIL2BAN=Y",
       "ZELLIJ=N",
       "FIREWALL_ZONE=public",
       "HTTP_HTTPS=N"
     ]
-    script = "install.sh"
+    script = "script/provisioner.sh"
   }
 }
