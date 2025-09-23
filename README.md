@@ -18,7 +18,7 @@ Each distro has its own directory to keep its configuration isolated and organiz
 Before you begin, ensure the following software is installed on your machine:
 
 1. [Packer](https://developer.hashicorp.com/packer/install)
-1. VMWare **or** VirtualBox **or** authenticate to AWS **or** authenticate to GCP **or** [more](https://developer.hashicorp.com/packer/integrations)
+1. QEMU **or** VirtualBox **or** authenticate to AWS **or** authenticate to GCP **or** [more](https://developer.hashicorp.com/packer/integrations)
 1. Client SSH. Usually pre-installed on Linux, macOS, and Windows (via WSL or Git Bash)
 
 ## Configuration
